@@ -1,9 +1,10 @@
 <script setup>
-import Diary from "./components/diary.vue";
+import Diary from './components/diary.vue'
 import { onBeforeMount, ref, watch } from 'vue'
 const value = ref('')
 
-onBeforeMount(() => {
+onBeforeMount(() =>
+{
   if (document.cookie) {
     let strcookie = document.cookie;//获取cookie字符串
     let arrcookie = strcookie.split("; ");//分割
@@ -13,7 +14,8 @@ onBeforeMount(() => {
   }
 })
 watch(() => value.value,
-  () => {
+  () =>
+  {
     if (value.value === '0121') {
       let expTime = new Date();
       expTime.setTime(expTime.getTime() + 30 * 60 * 1000);
@@ -24,10 +26,12 @@ watch(() => value.value,
 </script>
 
 <template>
-  <div v-if="value !== '0121'" class="protect">
+  <div v-if="value === '0121'" class="diary">
+    <Diary />
+  </div>
+  <div v-else class="protect">
     <el-input autofocus type="password" v-model="value"></el-input>
   </div>
-  <Diary v-else />
 </template>
 
 <style>
@@ -43,5 +47,12 @@ watch(() => value.value,
   left: 50%;
   position: absolute;
   transform: translate(-50%, -50%);
+}
+
+.diary {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  background-color: #fff;
 }
 </style>

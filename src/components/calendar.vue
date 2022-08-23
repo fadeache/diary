@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref, nextTick, onBeforeMount, onBeforeUnmount, watch } from "vue";
+import { computed, reactive, ref, onBeforeMount } from "vue";
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from "element-plus";
 
@@ -11,15 +11,16 @@ const state = reactive({
 });
 
 const form = ref(null);
-const formKey = ref(0);
-onBeforeMount(async () => {
+onBeforeMount(async () =>
+{
   let data = {
     user: 'gaoxing',
     pwd: '8b71883a51c02981412be3a5141caa25',
   };
   const rst = await axios.post("/ache/login", data);
   if (rst.data) {
-    axios.interceptors.request.use((config) => {
+    axios.interceptors.request.use((config) =>
+    {
       config.headers["Cookie-User"] = data.user + "=" + data.pwd;
       return config;
     });
@@ -28,20 +29,25 @@ onBeforeMount(async () => {
   updateSchedules();
 });
 
-const updateSchedules = async () => {
+const updateSchedules = async () =>
+{
   let res = await axios.get("/ache/calendar/get-calendar");
   state.schedules = res.data;
 };
 
-const getToday = () => {
+const getToday = () =>
+{
   let today = new Date()
   date.value = today.getFullYear() + '-' + (today.getMonth() + 1 < 10 ? '0' + (today.getMonth() + 1) : today.getMonth() + 1) + '-' + today.getDate()
 }
 
-const getSchedules = computed(() => {
-  return function (data) {
+const getSchedules = computed(() =>
+{
+  return function (data)
+  {
     let theDay = [];
-    state.schedules.find((item) => {
+    state.schedules.find((item) =>
+    {
       if (item.date === data.day) {
         theDay.push(item);
       }
@@ -50,8 +56,10 @@ const getSchedules = computed(() => {
   };
 });
 
-const editSchedule = () => {
-  form.value.validate(async (valid, fields) => {
+const editSchedule = () =>
+{
+  form.value.validate(async (valid, fields) =>
+  {
     if (valid) {
       await axios.put("/ache/calendar/edit-calendar", aSchedule.value);
       updateSchedules();
@@ -65,18 +73,21 @@ const aSchedule = ref({
   completed: 0,
   time: ''
 });
-const deleteSchedule = async (id) => {
+const deleteSchedule = async (id) =>
+{
   ElMessageBox.confirm("确定要删除这段吗？", "删除", {
     distinguishCancelAndClose: true,
     confirmButtonText: "确定",
     cancelButtonText: "取消",
-  }).then(async () => {
+  }).then(async () =>
+  {
     await axios.delete("/ache/calendar/delete-calendar", { params: { id: parseInt(id) } });
     updateSchedules();
   });
 };
 
-const displayDialog = (data) => {
+const displayDialog = (data) =>
+{
   aSchedule.value = data;
   state.showDialog = true;
 };
@@ -88,7 +99,8 @@ const rules = reactive({
   ],
 });
 
-const exchange = async (item) => {
+const exchange = async (item) =>
+{
   state.exchangeArr.push(item.id);
   if (state.exchangeArr.length === 1) {
     ElMessage({
@@ -113,7 +125,8 @@ const exchange = async (item) => {
 
 const value = ref('')
 const date = ref('')
-const addMore = async () => {
+const addSchedule = async () =>
+{
   if (value.value) {
     let data = {
       date: date.value,
@@ -140,7 +153,8 @@ const detail = ref([])
     @click="state.showOperation = !state.showOperation">
     隐藏操作
   </div>
-  <el-calendar v-model="state.value"><template #dateCell="{ data }">
+  <el-calendar v-model="state.value">
+    <template #dateCell="{ data }">
       <div class="hasSchedules" v-if="getSchedules(data).length"
         @click="detail.value = getSchedules(data); date = data.day">
         {{ data.day.split("-").slice(2).join("") }}
@@ -156,26 +170,14 @@ const detail = ref([])
     <div class="operation">
       <el-date-picker :editable="false" v-model="date" type="date">
       </el-date-picker>
-      <el-button type="success" @click="addMore">添加今日美好</el-button>
+      <el-button type="success" @click="addSchedule">添加今日美好</el-button>
     </div>
   </div>
-  <div class="detail">
-    <el-alert v-for="item in detail.value" :key="item.id" :closable="false"
-      :type="['success', 'info', 'error', 'warning'][Math.floor(Math.random() * 4)]">
-      <span>{{ item.event }}</span><span v-if="item.time"> 🥕{{ item.time }}</span>
-      <div style="width: 100%;">
-        <span class="delete" v-show="state.showOperation" @click="deleteSchedule(item.id)">delete</span>
-        <span class="edit" v-show="state.showOperation" @click="displayDialog(item)">edit</span>
-        <span class="exchange" v-show="state.showOperation" @click="exchange(item)">exchange</span>
-      </div>
-    </el-alert>
-  </div>
-
   <el-dialog v-model="state.showDialog" custom-class="my-dialog general">
     <template #header>
       <span>编辑日记</span>
     </template>
-    <el-form :model="aSchedule" ref="form" :rules="rules" :key="formKey" :label-width="52">
+    <el-form :model="aSchedule" ref="form" :rules="rules" :label-width="52">
       <el-form-item label="日期" prop="date">
         <el-date-picker :editable="false" v-model="aSchedule.date" type="date" placeholder="选择日期" format="YYYY/MM/DD"
           value-format="YYYY-MM-DD">
@@ -186,12 +188,12 @@ const detail = ref([])
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="editSchedule()">确定</el-button>
+      <el-button @click="editSchedule">确定</el-button>
     </template>
   </el-dialog>
 </template>
 
-<style scoped lang="scss">
+<Style lang="scss" scoped>
 .el-calendar {
   --el-calendar-header-border-bottom: transparent;
 
@@ -232,99 +234,4 @@ const detail = ref([])
   right: 16px;
   opacity: 0;
 }
-
-.input {
-  margin-top: 24px;
-
-  .operation {
-    margin-top: 16px;
-    display: flex;
-    justify-content: space-between;
-
-    .el-button {
-      width: 108px;
-    }
-  }
-}
-
-.detail {
-  text-align: left;
-  margin-top: 24px;
-  padding-bottom: 16px;
-
-  .el-alert {
-    margin-top: 10px;
-
-    :deep(.el-alert__content) {
-      padding: 0;
-      width: 100%;
-
-      .el-alert__description {
-
-        margin: 5px 0;
-      }
-    }
-
-
-    // :deep(.el-alert__title.is-bold) {
-    //   font-weight: 400;
-    // }
-    .exchange {
-      float: right;
-    }
-
-    .edit,
-    .delete {
-      float: right;
-      margin-left: 16px;
-    }
-  }
-
-}
-</style>
-
-<style lang="scss">
-.gm {
-  color: #70b8ff;
-  cursor: pointer;
-}
-
-.gm:hover {
-  color: #409eff;
-}
-
-.my-dialog {
-  &.general {
-    &.el-dialog {
-      max-width: 460px;
-      min-width: 360px;
-    }
-  }
-}
-
-.el-dialog__header {
-  border-bottom: 1px solid #eee;
-  text-align: left;
-
-  svg {
-    vertical-align: -12% !important;
-  }
-
-  span {
-    margin-left: 5px;
-  }
-}
-
-.el-dialog__body {
-  padding: 24px !important;
-  height: calc(100% - 168px);
-  overflow: auto;
-  text-align: left;
-}
-
-.el-message-box {
-  vertical-align: 15vh !important;
-  --el-messagebox-width: 360px !important;
-}
-</style>
-
+</Style>
