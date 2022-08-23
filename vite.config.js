@@ -15,8 +15,8 @@ export default defineConfig({
     open: true, // 运行时打开浏览器
     proxy: {
       "/ache": {
-        // target: "http://82.157.160.30:8080/",
-        target: "http://localhost:8080/",
+        target: "http://82.157.160.30:8080/",
+        // target: "http://localhost:8080/",
         pathRewrite: {
           "^/ache": "",
         },
