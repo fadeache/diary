@@ -428,6 +428,7 @@ const props = defineProps({ owner: String });
       padding: 8px 16px;
       color: grey;
       font-size: 12px;
+      overflow: auto;
 
       .commentDel {
         float: right;
