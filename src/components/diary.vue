@@ -16,11 +16,13 @@ const form = ref(null);
 const input = ref('')
 const date = ref(time.format(new Date, 'yyyy-MM-dd'))
 const details = ref([])
-onBeforeMount(async () => {
+onBeforeMount(async () =>
+{
   updateSchedules();
 });
 
-const updateSchedules = async () => {
+const updateSchedules = async () =>
+{
   let res = await axios.get("/ache/calendar/get-calendar");
   state.schedules = res.data;
 };
@@ -40,7 +42,8 @@ const comment = ref({
 const oneComment = ref([])
 const showComments = ref(null)
 
-const displayDialog = (data, mode) => {
+const displayDialog = (data, mode) =>
+{
   state.mode = mode
   aSchedule.value = data;
   if (mode) {
@@ -63,8 +66,10 @@ const rules2 = reactive({
   comment: [{ required: true, message: "评论不能为空哦", trigger: ["blur"] }],
 });
 
-const operateSchedule = () => {
-  form.value.validate(async (valid, fields) => {
+const operateSchedule = () =>
+{
+  form.value.validate(async (valid, fields) =>
+  {
     if (valid) {
       if (state.mode) {
         await axios.post("/ache/calendar/add-comment", comment.value)
@@ -81,18 +86,21 @@ const operateSchedule = () => {
   });
 };
 
-const deleteSchedule = async (id) => {
+const deleteSchedule = async (id) =>
+{
   ElMessageBox.confirm("确定要删除这段吗？", "删除", {
     distinguishCancelAndClose: true,
     confirmButtonText: "确定",
     cancelButtonText: "取消",
-  }).then(async () => {
+  }).then(async () =>
+  {
     await axios.delete("/ache/calendar/delete-calendar", { params: { id: parseInt(id) } });
     updateSchedules();
   });
 };
 
-const exchange = async (item) => {
+const exchange = async (item) =>
+{
   state.exchangeArr.push(item.id);
   if (state.exchangeArr.length === 1) {
     ElMessage({
@@ -115,7 +123,8 @@ const exchange = async (item) => {
   }
 };
 
-const addSchedule = async () => {
+const addSchedule = async () =>
+{
   if (input.value) {
     let data = {
       date: date.value,
@@ -134,10 +143,13 @@ const addSchedule = async () => {
     ElMessage.error('小高记得写点东西哦')
   }
 }
-const getSchedules = computed(() => {
-  return function (data) {
+const getSchedules = computed(() =>
+{
+  return function (data)
+  {
     let theDay = [];
-    state.schedules.find((item) => {
+    state.schedules.find((item) =>
+    {
       if (item.date === data.day) {
         theDay.push(item);
       }
@@ -146,7 +158,8 @@ const getSchedules = computed(() => {
   };
 });
 
-const showDetails = (data) => {
+const showDetails = (data) =>
+{
   if (data) details.value = state.schedules.filter((item) => { return item.date === data.day })
   date.value = data.day
 }
@@ -156,16 +169,17 @@ watch(
   () => showDetails({ 'day': date.value })
 )
 
-const openComment = async (pid) => {
+const openComment = async (pid) =>
+{
   showComments.value = showComments.value === pid ? null : pid
-  console.log(showComments.value === pid);
   if (showComments.value) {
     let res = await axios.get("/ache/calendar/get-comments", { params: { pid: pid } })
     oneComment.value = res.data
   }
 }
 
-const deleteComment = async (id, pid) => {
+const deleteComment = async (id, pid) =>
+{
   await axios.delete("/ache/calendar/delete-comment", { params: { id: parseInt(id) } })
   ElMessage.success('评论删除成功啦')
   let res = await axios.get("/ache/calendar/get-comments", { params: { pid: pid } })
@@ -176,43 +190,37 @@ const deleteComment = async (id, pid) => {
 <template>
   <el-calendar v-model="state.value">
     <template #dateCell="{ data }">
-      <div
-        :class="{ 'hasSchedules': getSchedules(data).length }"
-        @click="showDetails(data)"
-      >{{ data.day.split("-").slice(2).join("") }}</div>
+      <div :class="{ 'hasSchedules': getSchedules(data).length }" @click="showDetails(data)">{{
+          data.day.split("-").slice(2).join("")
+      }}</div>
     </template>
   </el-calendar>
 
   <div class="input">
     <el-input type="textarea" :rows="7" placeholder="记录小高的点点滴滴" v-model="input"></el-input>
     <div class="operation">
-      <el-date-picker :editable="false" v-model="date" type="date" value-format="YYYY-MM-DD"></el-date-picker>
+      <el-date-picker :editable="false" v-model="date" type="date" value-format="YYYY-MM-DD" :clearable="false">
+      </el-date-picker>
       <el-button type="success" @click="addSchedule">添加今日美好</el-button>
     </div>
   </div>
 
   <div class="detail">
     <div v-for="item in JSON.parse(JSON.stringify(details))">
-      <el-alert
-        :closable="false"
-        :type="['success', 'info', 'error', 'warning'][Math.floor(Math.random() * 4)]"
-        @click="state.showIndex = state.showIndex === item.id ? null : item.id"
-      >
+      <el-alert :closable="false" :type="['success', 'info', 'error', 'warning'][Math.floor(Math.random() * 4)]"
+        @click="state.showIndex = state.showIndex === item.id ? null : item.id">
         <span>{{ item.event }}</span>
         <span v-if="item.time">🥕{{ item.time }}</span>
         <div style="width: 100%;margin-top: 8px;" v-show="state.showIndex === item.id">
           <span class="edit" @click.stop="displayDialog(item, 0)">编辑</span>
           <span class="exchange" @click.stop="exchange(item)">交换</span>
           <span class="delete" @click.stop="deleteSchedule(item.id)">删除</span>
-          <span
-            class="open"
-            @click="openComment(item.id)"
-          >{{ showComments === item.id ? '收起评论' : '展开评论' }}</span>
+          <span class="open" @click="openComment(item.id)">{{ showComments === item.id ? '收起评论' : '展开评论' }}</span>
           <span class="comment" @click.stop="displayDialog(item, 1)">评论</span>
         </div>
       </el-alert>
       <div class="comments" v-if="showComments === item.id">
-        <div class="comment" v-for="(one,index) in JSON.parse(JSON.stringify(oneComment))">
+        <div class="comment" v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))">
           <span>评论{{ index + 1 }}：{{ one.comment }}</span>
           <span class="commentDel" @click.stop="deleteComment(one.id, item.id)">删除</span>
         </div>
@@ -226,13 +234,8 @@ const deleteComment = async (id, pid) => {
     </template>
     <el-form :model="aSchedule" ref="form" :rules="rules" :label-width="52">
       <el-form-item label="日期" prop="date">
-        <el-date-picker
-          :editable="false"
-          v-model="aSchedule.date"
-          type="date"
-          placeholder="选择日期"
-          value-format="YYYY-MM-DD"
-        ></el-date-picker>
+        <el-date-picker :editable="false" v-model="aSchedule.date" type="date" placeholder="选择日期"
+          value-format="YYYY-MM-DD" :clearable="false"></el-date-picker>
       </el-form-item>
       <el-form-item label="事件" prop="event">
         <el-input type="textarea" :rows="7" v-model="aSchedule.event"></el-input>
@@ -340,9 +343,11 @@ const deleteComment = async (id, pid) => {
       float: left;
       margin-left: 16px;
     }
+
     .comment {
       float: right;
     }
+
     .open {
       float: right;
       margin-left: 16px;
@@ -351,6 +356,7 @@ const deleteComment = async (id, pid) => {
 
   .comments {
     padding: 4px 0;
+
     .comment {
       border: 1px #eee solid;
       background: rgb(253, 253, 253);
@@ -359,6 +365,7 @@ const deleteComment = async (id, pid) => {
       padding: 8px 16px;
       color: grey;
       font-size: 12px;
+
       .commentDel {
         float: right;
         color: lightpink;
