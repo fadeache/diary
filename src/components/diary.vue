@@ -51,7 +51,6 @@ const comment = ref({
 });
 
 const oneComment = ref([]);
-const showComments = ref(null);
 const allComents = ref([]);
 
 const displayByEdit = (data) => {
@@ -60,9 +59,8 @@ const displayByEdit = (data) => {
 };
 
 const rules = reactive({
-  date: [{ required: true, message: "请选择日期", trigger: ["blur"] }],
   event: [
-    { required: true, message: "请输入待办事件", trigger: ["blur", "change"] },
+    { required: true, message: "这天没啥东西写吗", trigger: ["blur", "change"] },
   ],
 });
 
@@ -98,7 +96,7 @@ const exchange = async (item) => {
   if (state.exchangeArr.length === 1) {
     ElMessage({
       message:
-        "当前选择事件：" +
+        "当前选择的是：" +
         (item.event.length > 12
           ? item.event.substring(0, 12) + "..."
           : item.event),
@@ -106,9 +104,9 @@ const exchange = async (item) => {
   } else if (state.exchangeArr.length === 2) {
     ElMessage({
       message:
-        "与之交换的事件：" +
-        (item.event.length > 10
-          ? item.event.substring(0, 10) + "..."
+        "与之交换的为：" +
+        (item.event.length > 12
+          ? item.event.substring(0, 12) + "..."
           : item.event),
     });
     await axios.put("/ache/calendar/exchange-calendar", {
@@ -117,7 +115,7 @@ const exchange = async (item) => {
     });
     ElMessage({
       type: "success",
-      message: "位置交换成功！",
+      message: "位置交换成功啦",
     });
     updateSchedules();
     state.exchangeArr = [];
@@ -138,9 +136,9 @@ const addSchedule = async () => {
     // date.value = new Date(tempDate.getTime() + 86400000)
     // date.value = date.value.getFullYear() + '-' + (date.value.getMonth() + 1 < 10 ? '0' + (date.value.getMonth() + 1) : date.value.getMonth() + 1) + '-' + date.value.getDate()
     input.value = "";
-    ElMessage.success("添加成功啦，下一条吧");
+    ElMessage.success("添加成功啦");
   } else {
-    ElMessage.error("记得写点东西哦");
+    ElMessage.error("记得写点东西哦" + props.owner);
   }
 };
 const getSchedules = computed(() => {
@@ -170,14 +168,11 @@ watch(
 
 const showOperations = (id, len) => {
   state.showIndex = state.showIndex === id ? null : id;
-  if (len) {
-    showComments.value = showComments.value === id ? null : id;
-    updateComments(id);
-  }
+  oneComment.value = [];
+  if (len) updateComments(id);
 };
 
 const updateComments = async (id) => {
-  oneComment.value = [];
   state.loading2 = true;
   let res = await axios.get("/ache/calendar/get-comments", {
     params: { pid: id },
@@ -190,7 +185,7 @@ const addComment = () => {
   form2.value.validate(async (valid, fields) => {
     if (valid) {
       await axios.post("/ache/calendar/add-comment", comment.value);
-      ElMessage.success("评论成功");
+      ElMessage.success("评论成功啦");
       state.showDialog2 = false;
       updateComments(aSchedule.value.id);
       getALLComments()
@@ -210,7 +205,7 @@ const deleteComment = async (id, pid) => {
   await axios.delete("/ache/calendar/delete-comment", {
     params: { id: parseInt(id) },
   });
-  ElMessage.success("评论删除成功啦");
+  ElMessage.success("删掉这条评论啦");
   updateComments(pid);
   getALLComments()
   oneComment.value = res.data;
@@ -281,7 +276,7 @@ const props = defineProps({ owner: String });
           <span class="comment" @click.stop="displayByComment(item)">评论</span>
         </div>
       </el-alert>
-      <div class="comments" v-if="showComments === item.id" v-loading="state.loading2">
+      <div class="comments" v-show="state.showIndex === item.id" v-loading="state.loading2">
         <div class="oneComment" v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))">
           <span>评论{{ index + 1 }}：{{ one.comment }}</span>
           <span class="commentDel" @click.stop="deleteComment(one.id, item.id)">删除</span>
