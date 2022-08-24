@@ -1,19 +1,16 @@
 <script setup>
 import Diary from "./components/diary.vue";
 import Login from "./components/login.vue";
-import { onBeforeMount, ref } from 'vue'
+import { onBeforeMount, ref, watch } from "vue";
 import { useStore } from "vuex";
-import { ElMessage } from "element-plus";
-const store = useStore()
-const isLogin = ref(false)
-onBeforeMount(() =>
-{
-  store.dispatch("user/login").then((rst) =>
-  {
-    if (rst) isLogin.value = true
-  })
+const store = useStore();
+const isLogin = ref(false);
+onBeforeMount(() => {
+  store.dispatch("user/login").then((rst) => {
+    if (rst) isLogin.value = true;
+  });
 });
-const whetherLogin = (whether) => isLogin.value = whether
+const whetherLogin = (whether) => (isLogin.value = whether);
 </script>
 
 <template>

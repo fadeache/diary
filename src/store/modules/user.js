@@ -58,6 +58,7 @@ const actions = {
 const mutations = {
   setUser(state, info) {
     state.info = info;
+    import.meta.env.VITE_APP_OWNER = info.name;
   },
   setCookie(state, userInfo) {
     let expTime = new Date();
