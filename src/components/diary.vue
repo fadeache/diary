@@ -28,6 +28,7 @@ const date = ref(time.format(new Date(), "yyyy-MM-dd"));
 const details = ref([]);
 onBeforeMount(async () => {
   updateSchedules();
+  getALLComments();
 });
 
 const updateSchedules = async () => {
@@ -51,6 +52,7 @@ const comment = ref({
 
 const oneComment = ref([]);
 const showComments = ref(null);
+const allComents = ref([]);
 const owner = ref(import.meta.env.VITE_APP_OWNER);
 
 const displayByEdit = (data) => {
@@ -167,10 +169,12 @@ watch(
   () => showDetails({ day: date.value })
 );
 
-const showOperations = (id) => {
+const showOperations = (id, len) => {
   state.showIndex = state.showIndex === id ? null : id;
-  showComments.value = showComments.value === id ? null : id;
-  updateComments(id);
+  if (len) {
+    showComments.value = showComments.value === id ? null : id;
+    updateComments(id);
+  }
 };
 
 const updateComments = async (id) => {
@@ -211,6 +215,22 @@ const deleteComment = async (id, pid) => {
   updateComments(pid);
   oneComment.value = res.data;
 };
+
+const getALLComments = async () => {
+  let res = await axios.get("/ache/calendar/get-comments");
+  allComents.value = res.data;
+};
+
+const hasComment = computed(() => {
+  return function (id) {
+    let map = 0;
+    allComents.value.find((item) => {
+      console.log(item.pid, id);
+      if (item.pid === id) map++;
+    });
+    return map;
+  };
+});
 </script>
 
 <template>
@@ -252,10 +272,13 @@ const deleteComment = async (id, pid) => {
         :type="
           ['success', 'info', 'error', 'warning'][Math.floor(Math.random() * 4)]
         "
-        @click="showOperations(item.id)"
+        @click="showOperations(item.id, hasComment(item.id))"
       >
         <span>{{ item.event }}</span>
         <span v-if="item.time">🥕{{ item.time }}</span>
+        <span class="tag" v-if="hasComment(item.id)">{{
+          hasComment(item.id)
+        }}</span>
         <div
           style="width: 100%; margin-top: 8px"
           v-show="state.showIndex === item.id"
@@ -405,10 +428,14 @@ const deleteComment = async (id, pid) => {
         margin: 5px 0;
       }
     }
-
-    // :deep(.el-alert__title.is-bold) {
-    //   font-weight: 400;
-    // }
+    .tag {
+      border-radius: 50%;
+      border: 1px solid;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
     .edit {
       float: left;
     }
