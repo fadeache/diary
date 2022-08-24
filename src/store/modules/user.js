@@ -22,7 +22,7 @@ const actions = {
           config.headers["Cookie-User"] = data.user + "=" + data.pwd;
           return config;
         });
-        return true;
+        return rst;
       } else {
         return false;
       }
@@ -44,7 +44,7 @@ const actions = {
               config.headers["Cookie-User"] = data.user + "=" + data.pwd;
               return config;
             });
-            return true;
+            return rst;
           }
         }
         return false;
@@ -58,7 +58,6 @@ const actions = {
 const mutations = {
   setUser(state, info) {
     state.info = info;
-    import.meta.env.VITE_APP_OWNER = info.name;
   },
   setCookie(state, userInfo) {
     let expTime = new Date();

@@ -53,7 +53,6 @@ const comment = ref({
 const oneComment = ref([]);
 const showComments = ref(null);
 const allComents = ref([]);
-const owner = ref(import.meta.env.VITE_APP_OWNER);
 
 const displayByEdit = (data) => {
   aSchedule.value = data;
@@ -192,9 +191,8 @@ const addComment = () => {
     if (valid) {
       await axios.post("/ache/calendar/add-comment", comment.value);
       ElMessage.success("评论成功");
-      updateComments(aSchedule.value.id);
-      oneComment.value = res.data;
       state.showDialog2 = false;
+      updateComments(aSchedule.value.id);
     }
   });
 };
@@ -225,12 +223,13 @@ const hasComment = computed(() => {
   return function (id) {
     let map = 0;
     allComents.value.find((item) => {
-      console.log(item.pid, id);
       if (item.pid === id) map++;
     });
     return map;
   };
 });
+
+const props = defineProps({ owner: String });
 </script>
 
 <template>
@@ -249,7 +248,7 @@ const hasComment = computed(() => {
     <el-input
       type="textarea"
       :rows="7"
-      :placeholder="'记录' + owner + '的点点滴滴'"
+      :placeholder="'记录' + props.owner + '的点点滴滴'"
       v-model="input"
     ></el-input>
     <div class="operation">
@@ -432,9 +431,10 @@ const hasComment = computed(() => {
       border-radius: 50%;
       border: 1px solid;
       position: absolute;
-      right: 0;
+      right: 4px;
       top: 50%;
       transform: translateY(-50%);
+      padding: 0 2px;
     }
     .edit {
       float: left;

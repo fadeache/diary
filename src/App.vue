@@ -5,16 +5,20 @@ import { onBeforeMount, ref, watch } from "vue";
 import { useStore } from "vuex";
 const store = useStore();
 const isLogin = ref(false);
-onBeforeMount(() => {
-  store.dispatch("user/login").then((rst) => {
-    if (rst) isLogin.value = true;
-  });
+const owner = ref("");
+store.dispatch("user/login").then((rst) => {
+  if (rst) setAndLogin(rst);
 });
-const whetherLogin = (whether) => (isLogin.value = whether);
+const whetherLogin = (rst) => setAndLogin(rst);
+const setAndLogin = (rst) => {
+  document.title = rst.data.name + "的日记本";
+  owner.value = rst.data.name;
+  isLogin.value = true;
+};
 </script>
 
 <template>
-  <Diary v-if="isLogin" />
+  <Diary v-if="isLogin" :owner="owner" />
   <Login v-else @whetherLogin="whetherLogin" />
 </template>
 
