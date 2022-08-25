@@ -60,7 +60,11 @@ const displayByEdit = (data) => {
 
 const rules = reactive({
   event: [
-    { required: true, message: "这天没啥东西写吗", trigger: ["blur", "change"] },
+    {
+      required: true,
+      message: "这天没啥东西写吗",
+      trigger: ["blur", "change"],
+    },
   ],
 });
 
@@ -72,6 +76,7 @@ const editSchedule = () => {
   form.value.validate(async (valid, fields) => {
     if (valid) {
       await axios.put("/ache/calendar/edit-calendar", aSchedule.value);
+      ElMessage.success("编辑好咯");
       updateSchedules();
       state.showDialog = false;
     }
@@ -79,14 +84,15 @@ const editSchedule = () => {
 };
 
 const deleteSchedule = async (id) => {
-  ElMessageBox.confirm("确定要删除这段吗？", "删除", {
+  ElMessageBox.confirm("真的要删除这段吗？", "删除", {
     distinguishCancelAndClose: true,
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+    confirmButtonText: "真的",
+    cancelButtonText: "假的",
   }).then(async () => {
     await axios.delete("/ache/calendar/delete-calendar", {
       params: { id: parseInt(id) },
     });
+    ElMessage.success("删掉这段话咯");
     updateSchedules();
   });
 };
@@ -188,7 +194,7 @@ const addComment = () => {
       ElMessage.success("评论成功啦");
       state.showDialog2 = false;
       updateComments(aSchedule.value.id);
-      getALLComments()
+      getALLComments();
     }
   });
 };
@@ -207,7 +213,7 @@ const deleteComment = async (id, pid) => {
   });
   ElMessage.success("删掉这条评论啦");
   updateComments(pid);
-  getALLComments()
+  getALLComments();
   oneComment.value = res.data;
 };
 
@@ -235,12 +241,19 @@ const props = defineProps({ owner: String });
       <div
         :class="{ hasSchedules: getSchedules(data).length }"
         @click="showDetails(data)"
-      >{{ data.day.split("-").slice(2).join("") }}</div>
+      >
+        {{ data.day.split("-").slice(2).join("") }}
+      </div>
     </template>
   </el-calendar>
 
   <div class="input">
-    <el-input type="textarea" :rows="7" :placeholder="'记录' + props.owner + '的点点滴滴'" v-model="input"></el-input>
+    <el-input
+      type="textarea"
+      :rows="7"
+      :placeholder="'记录' + props.owner + '的点点滴滴'"
+      v-model="input"
+    ></el-input>
     <div class="operation">
       <el-date-picker
         :editable="false"
@@ -265,21 +278,31 @@ const props = defineProps({ owner: String });
         <span>{{ item.event }}</span>
         <span v-if="item.time">🥕{{ item.time }}</span>
         <span class="tag" v-if="hasComment(item.id)">
-          {{
-            hasComment(item.id)
-          }}
+          {{ hasComment(item.id) }}
         </span>
-        <div style="width: 100%; margin-top: 8px" v-show="state.showIndex === item.id">
+        <div
+          style="width: 100%; margin-top: 8px"
+          v-show="state.showIndex === item.id"
+        >
           <span class="edit" @click.stop="displayByEdit(item)">编辑</span>
           <span class="exchange" @click.stop="exchange(item)">交换</span>
           <span class="delete" @click.stop="deleteSchedule(item.id)">删除</span>
           <span class="comment" @click.stop="displayByComment(item)">评论</span>
         </div>
       </el-alert>
-      <div class="comments" v-show="state.showIndex === item.id" v-loading="state.loading2">
-        <div class="oneComment" v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))">
+      <div
+        class="comments"
+        v-show="state.showIndex === item.id"
+        v-loading="state.loading2"
+      >
+        <div
+          class="oneComment"
+          v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))"
+        >
           <span>评论{{ index + 1 }}：{{ one.comment }}</span>
-          <span class="commentDel" @click.stop="deleteComment(one.id, item.id)">删除</span>
+          <span class="commentDel" @click.stop="deleteComment(one.id, item.id)"
+            >删除</span
+          >
         </div>
       </div>
     </div>
@@ -301,7 +324,11 @@ const props = defineProps({ owner: String });
         ></el-date-picker>
       </el-form-item>
       <el-form-item label="事件" prop="event">
-        <el-input type="textarea" :rows="7" v-model="aSchedule.event"></el-input>
+        <el-input
+          type="textarea"
+          :rows="7"
+          v-model="aSchedule.event"
+        ></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -315,10 +342,19 @@ const props = defineProps({ owner: String });
     </template>
     <el-form :model="comment" ref="form2" :rules="rules2" :label-width="52">
       <el-form-item label="回复">
-        <el-input type="textarea" :rows="3" v-model="aSchedule.event" disabled></el-input>
+        <el-input
+          type="textarea"
+          :rows="3"
+          v-model="aSchedule.event"
+          disabled
+        ></el-input>
       </el-form-item>
       <el-form-item label="评论" prop="comment">
-        <el-input type="textarea" :rows="7" v-model="comment.comment"></el-input>
+        <el-input
+          type="textarea"
+          :rows="7"
+          v-model="comment.comment"
+        ></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
