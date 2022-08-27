@@ -173,9 +173,13 @@ watch(
 );
 
 const showOperations = (id, len) => {
-  state.showIndex = state.showIndex === id ? null : id;
-  oneComment.value = [];
-  if (len) updateComments(id);
+  if (state.showIndex === id) {
+    state.showIndex = null;
+  } else {
+    state.showIndex = id;
+    oneComment.value = [];
+    if (len) updateComments(id);
+  }
 };
 
 const updateComments = async (id) => {
@@ -233,6 +237,13 @@ const hasComment = computed(() => {
 });
 
 const props = defineProps({ owner: String });
+const pictures = ref([
+  "/gx1.png",
+  "/gm1.png",
+  "/gm2.png",
+  "/gm3.png",
+  "/gx0.png",
+]);
 </script>
 
 <template>
@@ -290,6 +301,15 @@ const props = defineProps({ owner: String });
           <span class="comment" @click.stop="displayByComment(item)">评论</span>
         </div>
       </el-alert>
+      <div style="margin-top: 4px" v-show="state.showIndex === 326">
+        <el-image
+          src="/gx0.png"
+          :preview-src-list="pictures"
+          :initial-index="4"
+          fit="cover"
+          lazy
+        />
+      </div>
       <div
         class="comments"
         v-show="state.showIndex === item.id"
@@ -323,13 +343,25 @@ const props = defineProps({ owner: String });
           :clearable="false"
         ></el-date-picker>
       </el-form-item>
-      <el-form-item label="事件" prop="event">
+      <el-form-item label="日记" prop="event">
         <el-input
           type="textarea"
           :rows="7"
           v-model="aSchedule.event"
         ></el-input>
       </el-form-item>
+      <!-- <el-form-item label="图片" prop="picture">
+        <el-upload
+          action="/ache/pictures/add-picture"
+          list-type="picture-card"
+          multiple
+          :auto-upload="false"
+          :data="{ pid: aSchedule }"
+          accept=".png,.jpg,.jpeg"
+        >
+          <el-icon><Plus /></el-icon>
+        </el-upload>
+      </el-form-item> -->
     </el-form>
     <template #footer>
       <el-button @click="editSchedule()">确定</el-button>
@@ -352,7 +384,7 @@ const props = defineProps({ owner: String });
       <el-form-item label="评论" prop="comment">
         <el-input
           type="textarea"
-          :rows="7"
+          :rows="3"
           v-model="comment.comment"
         ></el-input>
       </el-form-item>
@@ -490,6 +522,7 @@ const props = defineProps({ owner: String });
     &.el-dialog {
       max-width: 460px;
       min-width: 360px;
+      // max-height: 480px;
     }
   }
 }
