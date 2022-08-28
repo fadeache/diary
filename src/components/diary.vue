@@ -236,6 +236,7 @@ const hasComment = computed(() => {
   };
 });
 
+// const upload = ref(null)
 const props = defineProps({ owner: String });
 const pictures = ref([
   "/gx1.png",
@@ -244,6 +245,15 @@ const pictures = ref([
   "/gm3.png",
   "/gx0.png",
 ]);
+// const drawer = ref(false)
+// const picPid = ref(null)
+// const addPic = (id) => {
+//   drawer.value = true
+//   picPid.value = id
+// }
+// const uploadPic = () => {
+//   upload.value.submit()
+// }
 </script>
 
 <template>
@@ -285,6 +295,7 @@ const pictures = ref([
         <div style="width: 100%; margin-top: 8px" v-show="state.showIndex === item.id">
           <span class="edit" @click.stop="displayByEdit(item)">编辑</span>
           <span class="exchange" @click.stop="exchange(item)">交换</span>
+          <!-- <span class="addPic" @click.stop="addPic(item.id)">加图</span> -->
           <span class="delete" @click.stop="deleteSchedule(item.id)">删除</span>
           <span class="comment" @click.stop="displayByComment(item)">评论</span>
         </div>
@@ -319,18 +330,6 @@ const pictures = ref([
       <el-form-item label="日记" prop="event">
         <el-input type="textarea" :rows="7" v-model="aSchedule.event"></el-input>
       </el-form-item>
-      <!-- <el-form-item label="图片" prop="picture">
-        <el-upload
-          action="/ache/pictures/add-picture"
-          list-type="picture-card"
-          multiple
-          :auto-upload="false"
-          :data="{ pid: aSchedule }"
-          accept=".png,.jpg,.jpeg"
-        >
-          <el-icon><Plus /></el-icon>
-        </el-upload>
-      </el-form-item>-->
     </el-form>
     <template #footer>
       <el-button @click="editSchedule()">确定</el-button>
@@ -353,6 +352,34 @@ const pictures = ref([
       <el-button @click="addComment()">确定</el-button>
     </template>
   </el-dialog>
+
+  <!-- <el-drawer v-model="drawer" direction="btt">
+    <template #title>
+      <span style="text-align: left;">添加/编辑图片</span>
+    </template>
+    <template #default>
+      <el-upload
+        ref="upload"
+        action="/ache/calendar/add-picture"
+        list-type="picture-card"
+        multiple
+        :auto-upload="false"
+        :data="{ pid: picPid }"
+        accept=".png, .jpg, .jpeg"
+        method="put"
+      >
+        <el-icon>
+          <Plus />
+        </el-icon>
+      </el-upload>
+    </template>
+    <template #footer>
+      <div style="flex: auto">
+        <el-button @click="drawer = false">取消</el-button>
+        <el-button type="primary" @click="uploadPic">确定</el-button>
+      </div>
+    </template>
+  </el-drawer>-->
 </template>
 
 <style scoped lang="scss">
@@ -435,7 +462,9 @@ const pictures = ref([
     }
 
     .delete,
-    .exchange {
+    .exchange
+    // .addPic 
+ {
       float: left;
       margin-left: 16px;
     }
@@ -511,4 +540,18 @@ const pictures = ref([
   vertical-align: 15vh !important;
   --el-messagebox-width: 360px !important;
 }
+
+// .el-drawer {
+//   max-height: 80%;
+//   height: auto !important;
+//   .el-drawer__header {
+//     margin-bottom: 0;
+//   }
+//   .el-upload-list--picture-card {
+//     display: block;
+//     img {
+//       object-fit: cover;
+//     }
+//   }
+// }
 </style>
