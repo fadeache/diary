@@ -172,13 +172,18 @@ watch(
   () => showDetails({ day: date.value })
 );
 
-const showOperations = (id, len) => {
+const showOperations = async (id, len) => {
   if (state.showIndex === id) {
     state.showIndex = null;
   } else {
     state.showIndex = id;
     oneComment.value = [];
     if (len) updateComments(id);
+    singleFileList.value = []
+    currentFileList.value = []
+    let res = await axios.get('ache/calendar/get-picture', { params: { pid: id } })
+    singleFileList.value = res.data.map(item => { return item.path })
+    currentFileList.value = res.data.map(item => { return { 'name': item.name, 'url': item.path, 'id': item.id } })
   }
 };
 
@@ -236,24 +241,29 @@ const hasComment = computed(() => {
   };
 });
 
-// const upload = ref(null)
 const props = defineProps({ owner: String });
-const pictures = ref([
-  "/gx1.png",
-  "/gm1.png",
-  "/gm2.png",
-  "/gm3.png",
-  "/gx0.png",
-]);
-// const drawer = ref(false)
-// const picPid = ref(null)
-// const addPic = (id) => {
-//   drawer.value = true
-//   picPid.value = id
-// }
-// const uploadPic = () => {
-//   upload.value.submit()
-// }
+
+const singleFileList = ref([])
+const currentFileList = ref([])
+const upload = ref(null)
+const drawer = ref(false)
+const picPid = ref(null)
+const addPic = (id) => {
+  drawer.value = true
+  picPid.value = id
+}
+const onRemove = async (file) => {
+  await axios.delete("/ache/calendar/delete-picture", {
+    params: { id: file.id, name: file.name },
+  });
+}
+const closeDrawer = async () => {
+  let res = await axios.get('ache/calendar/get-picture', { params: { pid: picPid.value } })
+  singleFileList.value = res.data.map(item => { return item.path })
+  currentFileList.value = res.data.map(item => { return { 'name': item.name, 'url': item.path, 'id': item.id } })
+  ElMessage.success('图片更新成功啦')
+  drawer.value = false
+}
 </script>
 
 <template>
@@ -295,13 +305,19 @@ const pictures = ref([
         <div style="width: 100%; margin-top: 8px" v-show="state.showIndex === item.id">
           <span class="edit" @click.stop="displayByEdit(item)">编辑</span>
           <span class="exchange" @click.stop="exchange(item)">交换</span>
-          <!-- <span class="addPic" @click.stop="addPic(item.id)">加图</span> -->
+          <span class="addPic" @click.stop="addPic(item.id)">图片</span>
           <span class="delete" @click.stop="deleteSchedule(item.id)">删除</span>
           <span class="comment" @click.stop="displayByComment(item)">评论</span>
         </div>
       </el-alert>
-      <div style="margin-top: 4px" v-show="state.showIndex === item.id && item.id === 326">
-        <el-image src="/gx0.png" :preview-src-list="pictures" :initial-index="4" fit="cover" lazy />
+      <div style="margin-top: 8px" v-show="state.showIndex === item.id && singleFileList.length">
+        <el-image
+          v-for="path in singleFileList"
+          :src="path"
+          :preview-src-list="singleFileList"
+          fit="cover"
+          lazy
+        />
       </div>
       <div class="comments" v-show="state.showIndex === item.id" v-loading="state.loading2">
         <div class="oneComment" v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))">
@@ -353,33 +369,29 @@ const pictures = ref([
     </template>
   </el-dialog>
 
-  <!-- <el-drawer v-model="drawer" direction="btt">
-    <template #title>
+  <el-drawer v-model="drawer" direction="btt" :before-close="closeDrawer">
+    <template #header>
       <span style="text-align: left;">添加/编辑图片</span>
     </template>
     <template #default>
       <el-upload
         ref="upload"
+        v-model:file-list="currentFileList"
         action="/ache/calendar/add-picture"
         list-type="picture-card"
         multiple
-        :auto-upload="false"
-        :data="{ pid: picPid }"
-        accept=".png, .jpg, .jpeg"
+        :auto-upload="true"
+        :data="{ pid: picPid, time: new Date().getTime() }"
+        accept=".png, .jpg, .jpeg, .gif"
         method="put"
+        :on-remove="onRemove"
       >
         <el-icon>
           <Plus />
         </el-icon>
       </el-upload>
     </template>
-    <template #footer>
-      <div style="flex: auto">
-        <el-button @click="drawer = false">取消</el-button>
-        <el-button type="primary" @click="uploadPic">确定</el-button>
-      </div>
-    </template>
-  </el-drawer>-->
+  </el-drawer>
 </template>
 
 <style scoped lang="scss">
@@ -462,9 +474,8 @@ const pictures = ref([
     }
 
     .delete,
-    .exchange
-    // .addPic 
- {
+    .exchange,
+    .addPic {
       float: left;
       margin-left: 16px;
     }
@@ -541,17 +552,23 @@ const pictures = ref([
   --el-messagebox-width: 360px !important;
 }
 
-// .el-drawer {
-//   max-height: 80%;
-//   height: auto !important;
-//   .el-drawer__header {
-//     margin-bottom: 0;
-//   }
-//   .el-upload-list--picture-card {
-//     display: block;
-//     img {
-//       object-fit: cover;
-//     }
-//   }
-// }
+.el-drawer {
+  max-height: 100%;
+  height: auto !important;
+  .el-drawer__header {
+    margin-bottom: 0;
+  }
+  .el-upload-list--picture-card {
+    display: block;
+    img {
+      object-fit: cover;
+    }
+    .el-upload-list__item-preview {
+      display: none !important;
+    }
+    .el-upload-list__item-actions span + span {
+      margin-left: 0;
+    }
+  }
+}
 </style>
