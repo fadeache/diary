@@ -382,7 +382,7 @@ const closeDrawer = async () => {
         multiple
         :auto-upload="true"
         :data="{ pid: picPid, time: new Date().getTime() }"
-        accept=".png, .jpg, .jpeg, .gif, .heic, .livp"
+        accept=".png, .jpg, .jpeg, .gif, .heic, .livp, .heif"
         method="put"
         :on-remove="onRemove"
       >
