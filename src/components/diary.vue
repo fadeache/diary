@@ -255,14 +255,9 @@ const hasPicture = computed(() => {
   };
 });
 const onRemove = async (file) => {
-  getCurrentList();
   await axios.delete("/ache/calendar/delete-picture", {
     params: { id: file.id, name: file.name },
   });
-};
-const closeDrawer = async () => {
-  getCurrentList();
-  drawer.value = false;
 };
 const currentFilePath = computed(() => {
   return function (val) {
@@ -280,7 +275,7 @@ const getCurrentList = async () => {
   });
 };
 const onError = (error) => {
-  console.log(error.message);
+  alert(error.message);
 };
 </script>
 
@@ -325,8 +320,9 @@ const onError = (error) => {
         @click="showOperations(item.id, hasComment(item.id))"
       >
         <span>{{ item.event }}</span>
-        <span class="time" v-if="hasPicture(item.id)"> 🥕{{ item.time }}</span>
-        <span class="time" v-else> 📣{{ item.time }}</span>
+        <span class="time" :class="{ 'time-has': hasPicture(item.id) }">{{
+          item.time
+        }}</span>
         <span class="tag" v-if="hasComment(item.id)">{{
           hasComment(item.id)
         }}</span>
@@ -338,8 +334,8 @@ const onError = (error) => {
           <span class="exchange" @click.stop="exchange(item)">交换</span>
           <span class="delete" @click.stop="deleteSchedule(item.id)">删除</span>
 
-          <span class="addPic" @click.stop="drawer = true">图片</span>
           <span class="comment" @click.stop="displayByComment(item)">评论</span>
+          <span class="addPic" @click.stop="drawer = true">图片</span>
         </div>
       </el-alert>
       <div
@@ -426,7 +422,7 @@ const onError = (error) => {
     </template>
   </el-dialog>
 
-  <el-drawer v-model="drawer" direction="btt" :before-close="closeDrawer">
+  <el-drawer v-model="drawer" direction="btt">
     <template #header>
       <span style="text-align: left">添加/编辑图片</span>
     </template>
@@ -518,6 +514,27 @@ const onError = (error) => {
         margin: 5px 0;
       }
     }
+    .time {
+      position: relative;
+      width: 48px;
+      text-align: right;
+      display: inline-block;
+      &::before {
+        content: "";
+        position: absolute;
+        background: #8bc5ff;
+        border-radius: 50%;
+        top: calc(50% - 3px);
+        left: 8px;
+        width: 6px;
+        height: 6px;
+      }
+    }
+    .time-has {
+      &::before {
+        background: #0dc93c;
+      }
+    }
     .tag {
       border-radius: 50%;
       border: 1px solid;
@@ -539,10 +556,10 @@ const onError = (error) => {
 
     .comment {
       float: right;
+      margin-left: 16px;
     }
     .addPic {
       float: right;
-      margin-left: 16px;
     }
   }
 
@@ -620,7 +637,11 @@ const onError = (error) => {
     margin-bottom: 0;
   }
   .el-upload-list--picture-card {
-    display: block;
+    justify-content: center;
+    gap: 12px;
+    .el-upload-list__item {
+      margin: 0;
+    }
     img {
       object-fit: cover;
     }
