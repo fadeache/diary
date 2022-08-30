@@ -173,7 +173,7 @@ watch(
   () => showDetails({ day: date.value })
 );
 
-const showOperations = async (id, len) => {
+const showOperations = async (id, len, boolean) => {
   if (state.showIndex === id) {
     state.showIndex = null;
   } else {
@@ -181,7 +181,7 @@ const showOperations = async (id, len) => {
     oneComment.value = [];
     if (len) updateComments(id);
     currentFileList.value = [];
-    getCurrentList();
+    if (boolean) getCurrentList();
   }
 };
 
@@ -254,10 +254,17 @@ const hasPicture = computed(() => {
     });
   };
 });
+const key = ref(0);
 const onRemove = async (file) => {
-  await axios.delete("/ache/calendar/delete-picture", {
-    params: { id: file.id, name: file.name },
-  });
+  if (file.id)
+    await axios.delete("/ache/calendar/delete-picture", {
+      params: { id: file.id, name: file.name },
+    });
+  else {
+    getCurrentList();
+    key.value++;
+    ElMessage.error("再试一下");
+  }
 };
 const currentFilePath = computed(() => {
   return function (val) {
@@ -276,6 +283,10 @@ const getCurrentList = async () => {
 };
 const onError = (error) => {
   alert(error.message);
+};
+const beforeClose = () => {
+  getAllList();
+  drawer.value = false;
 };
 </script>
 
@@ -317,7 +328,9 @@ const onError = (error) => {
         :type="
           ['success', 'info', 'error', 'warning'][Math.floor(Math.random() * 4)]
         "
-        @click="showOperations(item.id, hasComment(item.id))"
+        @click="
+          showOperations(item.id, hasComment(item.id), hasPicture(item.id))
+        "
       >
         <span>{{ item.event }}</span>
         <span class="time" :class="{ 'time-has': hasPicture(item.id) }">{{
@@ -352,7 +365,7 @@ const onError = (error) => {
       </div>
       <div
         class="comments"
-        v-show="state.showIndex === item.id"
+        v-show="state.showIndex === item.id && oneComment.length"
         v-loading="state.loading2"
       >
         <div
@@ -422,7 +435,12 @@ const onError = (error) => {
     </template>
   </el-dialog>
 
-  <el-drawer v-model="drawer" direction="btt">
+  <el-drawer
+    v-model="drawer"
+    direction="btt"
+    :before-close="beforeClose"
+    :key="key"
+  >
     <template #header>
       <span style="text-align: left">添加/编辑图片</span>
     </template>
@@ -522,7 +540,7 @@ const onError = (error) => {
       &::before {
         content: "";
         position: absolute;
-        background: #8bc5ff;
+        background: lightblue;
         border-radius: 50%;
         top: calc(50% - 3px);
         left: 8px;
@@ -532,7 +550,7 @@ const onError = (error) => {
     }
     .time-has {
       &::before {
-        background: #0dc93c;
+        background: rgb(23, 210, 23);
       }
     }
     .tag {
