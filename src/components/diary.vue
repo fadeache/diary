@@ -29,6 +29,7 @@ const details = ref([]);
 onBeforeMount(async () => {
   updateSchedules();
   getALLComments();
+  getAllList();
 });
 
 const updateSchedules = async () => {
@@ -144,7 +145,7 @@ const addSchedule = async () => {
     input.value = "";
     ElMessage.success("添加成功啦");
   } else {
-    ElMessage.error("记得写点东西哦" + props.owner);
+    ElMessage.error(props.owner + "没啥东西写吗");
   }
 };
 const getSchedules = computed(() => {
@@ -179,11 +180,8 @@ const showOperations = async (id, len) => {
     state.showIndex = id;
     oneComment.value = [];
     if (len) updateComments(id);
-    singleFileList.value = []
-    currentFileList.value = []
-    let res = await axios.get('ache/calendar/get-picture', { params: { pid: id } })
-    singleFileList.value = res.data.map(item => { return item.path })
-    currentFileList.value = res.data.map(item => { return { 'name': item.name, 'url': item.path, 'id': item.id } })
+    currentFileList.value = [];
+    getCurrentList();
   }
 };
 
@@ -200,7 +198,6 @@ const addComment = () => {
   form2.value.validate(async (valid, fields) => {
     if (valid) {
       await axios.post("/ache/calendar/add-comment", comment.value);
-      ElMessage.success("评论成功啦");
       state.showDialog2 = false;
       updateComments(aSchedule.value.id);
       getALLComments();
@@ -220,7 +217,6 @@ const deleteComment = async (id, pid) => {
   await axios.delete("/ache/calendar/delete-comment", {
     params: { id: parseInt(id) },
   });
-  ElMessage.success("删掉这条评论啦");
   updateComments(pid);
   getALLComments();
   oneComment.value = res.data;
@@ -243,27 +239,49 @@ const hasComment = computed(() => {
 
 const props = defineProps({ owner: String });
 
-const singleFileList = ref([])
-const currentFileList = ref([])
-const upload = ref(null)
-const drawer = ref(false)
-const picPid = ref(null)
-const addPic = (id) => {
-  drawer.value = true
-  picPid.value = id
-}
+const currentFileList = ref([]);
+const upload = ref(null);
+const drawer = ref(false);
+const allFileList = ref([]);
+const getAllList = async () => {
+  let res = await axios.get("ache/calendar/get-picture");
+  allFileList.value = res.data;
+};
+const hasPicture = computed(() => {
+  return function (id) {
+    return allFileList.value.find((item) => {
+      if (item.pid === id) return true;
+    });
+  };
+});
 const onRemove = async (file) => {
+  getCurrentList();
   await axios.delete("/ache/calendar/delete-picture", {
     params: { id: file.id, name: file.name },
   });
-}
+};
 const closeDrawer = async () => {
-  let res = await axios.get('ache/calendar/get-picture', { params: { pid: picPid.value } })
-  singleFileList.value = res.data.map(item => { return item.path })
-  currentFileList.value = res.data.map(item => { return { 'name': item.name, 'url': item.path, 'id': item.id } })
-  ElMessage.success('图片更新成功啦')
-  drawer.value = false
-}
+  getCurrentList();
+  drawer.value = false;
+};
+const currentFilePath = computed(() => {
+  return function (val) {
+    return val.map((item) => {
+      return item.url;
+    });
+  };
+});
+const getCurrentList = async () => {
+  let res = await axios.get("ache/calendar/get-picture", {
+    params: { pid: state.showIndex },
+  });
+  currentFileList.value = res.data.map((item) => {
+    return { name: item.name, url: item.path, id: item.id };
+  });
+};
+const onError = (error) => {
+  console.log(error.message);
+};
 </script>
 
 <template>
@@ -272,12 +290,19 @@ const closeDrawer = async () => {
       <div
         :class="{ hasSchedules: getSchedules(data).length }"
         @click="showDetails(data)"
-      >{{ data.day.split("-").slice(2).join("") }}</div>
+      >
+        {{ data.day.split("-").slice(2).join("") }}
+      </div>
     </template>
   </el-calendar>
 
   <div class="input">
-    <el-input type="textarea" :rows="7" :placeholder="'记录' + props.owner + '的点点滴滴'" v-model="input"></el-input>
+    <el-input
+      type="textarea"
+      :rows="7"
+      :placeholder="'记录' + props.owner + '的点点滴滴'"
+      v-model="input"
+    ></el-input>
     <div class="operation">
       <el-date-picker
         :editable="false"
@@ -300,29 +325,48 @@ const closeDrawer = async () => {
         @click="showOperations(item.id, hasComment(item.id))"
       >
         <span>{{ item.event }}</span>
-        <span v-if="item.time">🥕{{ item.time }}</span>
-        <span class="tag" v-if="hasComment(item.id)">{{ hasComment(item.id) }}</span>
-        <div style="width: 100%; margin-top: 8px" v-show="state.showIndex === item.id">
+        <span class="time" v-if="hasPicture(item.id)"> 🥕{{ item.time }}</span>
+        <span class="time" v-else> 📣{{ item.time }}</span>
+        <span class="tag" v-if="hasComment(item.id)">{{
+          hasComment(item.id)
+        }}</span>
+        <div
+          style="width: 100%; margin-top: 8px"
+          v-show="state.showIndex === item.id"
+        >
           <span class="edit" @click.stop="displayByEdit(item)">编辑</span>
           <span class="exchange" @click.stop="exchange(item)">交换</span>
-          <span class="addPic" @click.stop="addPic(item.id)">图片</span>
           <span class="delete" @click.stop="deleteSchedule(item.id)">删除</span>
+
+          <span class="addPic" @click.stop="drawer = true">图片</span>
           <span class="comment" @click.stop="displayByComment(item)">评论</span>
         </div>
       </el-alert>
-      <div style="margin-top: 8px" v-show="state.showIndex === item.id && singleFileList.length">
+      <div
+        style="margin-top: 8px"
+        v-show="state.showIndex === item.id && currentFileList.length"
+      >
         <el-image
-          v-for="path in singleFileList"
-          :src="path"
-          :preview-src-list="singleFileList"
+          v-for="file in currentFileList"
+          :src="file.url"
+          :preview-src-list="currentFilePath(currentFileList)"
           fit="cover"
           lazy
         />
       </div>
-      <div class="comments" v-show="state.showIndex === item.id" v-loading="state.loading2">
-        <div class="oneComment" v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))">
+      <div
+        class="comments"
+        v-show="state.showIndex === item.id"
+        v-loading="state.loading2"
+      >
+        <div
+          class="oneComment"
+          v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))"
+        >
           <span>评论{{ index + 1 }}：{{ one.comment }}</span>
-          <span class="commentDel" @click.stop="deleteComment(one.id, item.id)">删除</span>
+          <span class="commentDel" @click.stop="deleteComment(one.id, item.id)"
+            >删除</span
+          >
         </div>
       </div>
     </div>
@@ -344,7 +388,11 @@ const closeDrawer = async () => {
         ></el-date-picker>
       </el-form-item>
       <el-form-item label="日记" prop="event">
-        <el-input type="textarea" :rows="7" v-model="aSchedule.event"></el-input>
+        <el-input
+          type="textarea"
+          :rows="7"
+          v-model="aSchedule.event"
+        ></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -358,10 +406,19 @@ const closeDrawer = async () => {
     </template>
     <el-form :model="comment" ref="form2" :rules="rules2" :label-width="52">
       <el-form-item label="回复">
-        <el-input type="textarea" :rows="3" v-model="aSchedule.event" disabled></el-input>
+        <el-input
+          type="textarea"
+          :rows="3"
+          v-model="aSchedule.event"
+          disabled
+        ></el-input>
       </el-form-item>
       <el-form-item label="评论" prop="comment">
-        <el-input type="textarea" :rows="3" v-model="comment.comment"></el-input>
+        <el-input
+          type="textarea"
+          :rows="3"
+          v-model="comment.comment"
+        ></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -371,7 +428,7 @@ const closeDrawer = async () => {
 
   <el-drawer v-model="drawer" direction="btt" :before-close="closeDrawer">
     <template #header>
-      <span style="text-align: left;">添加/编辑图片</span>
+      <span style="text-align: left">添加/编辑图片</span>
     </template>
     <template #default>
       <el-upload
@@ -381,10 +438,11 @@ const closeDrawer = async () => {
         list-type="picture-card"
         multiple
         :auto-upload="true"
-        :data="{ pid: picPid, time: new Date().getTime() }"
-        accept=".png, .jpg, .jpeg, .gif, .heic, .livp, .heif"
+        :data="{ pid: state.showIndex }"
+        accept="image/*"
         method="put"
         :on-remove="onRemove"
+        :on-error="onError"
       >
         <el-icon>
           <Plus />
@@ -474,14 +532,17 @@ const closeDrawer = async () => {
     }
 
     .delete,
-    .exchange,
-    .addPic {
+    .exchange {
       float: left;
       margin-left: 16px;
     }
 
     .comment {
       float: right;
+    }
+    .addPic {
+      float: right;
+      margin-left: 16px;
     }
   }
 
