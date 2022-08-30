@@ -145,7 +145,7 @@ const addSchedule = async () => {
     input.value = "";
     ElMessage.success("添加成功啦");
   } else {
-    ElMessage.error(props.owner + "没啥东西写吗");
+    ElMessage.error(props.owner.name + "没啥东西写吗");
   }
 };
 const getSchedules = computed(() => {
@@ -237,7 +237,10 @@ const hasComment = computed(() => {
   };
 });
 
-const props = defineProps({ owner: String });
+const props = defineProps({ owner: Object });
+const cookie = ref({
+  'Cookie-User': props.owner.user + "=" + props.owner.pwd
+})
 
 const currentFileList = ref([]);
 const upload = ref(null);
@@ -296,9 +299,7 @@ const beforeClose = () => {
       <div
         :class="{ hasSchedules: getSchedules(data).length }"
         @click="showDetails(data)"
-      >
-        {{ data.day.split("-").slice(2).join("") }}
-      </div>
+      >{{ data.day.split("-").slice(2).join("") }}</div>
     </template>
   </el-calendar>
 
@@ -306,7 +307,7 @@ const beforeClose = () => {
     <el-input
       type="textarea"
       :rows="7"
-      :placeholder="'记录' + props.owner + '的点点滴滴'"
+      :placeholder="'记录' + props.owner.name + '的点点滴滴'"
       v-model="input"
     ></el-input>
     <div class="operation">
@@ -333,16 +334,17 @@ const beforeClose = () => {
         "
       >
         <span>{{ item.event }}</span>
-        <span class="time" :class="{ 'time-has': hasPicture(item.id) }">{{
-          item.time
-        }}</span>
-        <span class="tag" v-if="hasComment(item.id)">{{
-          hasComment(item.id)
-        }}</span>
-        <div
-          style="width: 100%; margin-top: 8px"
-          v-show="state.showIndex === item.id"
-        >
+        <span class="time" :class="{ 'time-has': hasPicture(item.id) }">
+          {{
+            item.time
+          }}
+        </span>
+        <span class="tag" v-if="hasComment(item.id)">
+          {{
+            hasComment(item.id)
+          }}
+        </span>
+        <div style="width: 100%; margin-top: 8px" v-show="state.showIndex === item.id">
           <span class="edit" @click.stop="displayByEdit(item)">编辑</span>
           <span class="exchange" @click.stop="exchange(item)">交换</span>
           <span class="delete" @click.stop="deleteSchedule(item.id)">删除</span>
@@ -351,10 +353,7 @@ const beforeClose = () => {
           <span class="addPic" @click.stop="drawer = true">图片</span>
         </div>
       </el-alert>
-      <div
-        style="margin-top: 8px"
-        v-show="state.showIndex === item.id && currentFileList.length"
-      >
+      <div style="margin-top: 8px" v-show="state.showIndex === item.id && currentFileList.length">
         <el-image
           v-for="file in currentFileList"
           :src="file.url"
@@ -368,14 +367,9 @@ const beforeClose = () => {
         v-show="state.showIndex === item.id && oneComment.length"
         v-loading="state.loading2"
       >
-        <div
-          class="oneComment"
-          v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))"
-        >
+        <div class="oneComment" v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))">
           <span>评论{{ index + 1 }}：{{ one.comment }}</span>
-          <span class="commentDel" @click.stop="deleteComment(one.id, item.id)"
-            >删除</span
-          >
+          <span class="commentDel" @click.stop="deleteComment(one.id, item.id)">删除</span>
         </div>
       </div>
     </div>
@@ -397,11 +391,7 @@ const beforeClose = () => {
         ></el-date-picker>
       </el-form-item>
       <el-form-item label="日记" prop="event">
-        <el-input
-          type="textarea"
-          :rows="7"
-          v-model="aSchedule.event"
-        ></el-input>
+        <el-input type="textarea" :rows="7" v-model="aSchedule.event"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -415,19 +405,10 @@ const beforeClose = () => {
     </template>
     <el-form :model="comment" ref="form2" :rules="rules2" :label-width="52">
       <el-form-item label="回复">
-        <el-input
-          type="textarea"
-          :rows="3"
-          v-model="aSchedule.event"
-          disabled
-        ></el-input>
+        <el-input type="textarea" :rows="3" v-model="aSchedule.event" disabled></el-input>
       </el-form-item>
       <el-form-item label="评论" prop="comment">
-        <el-input
-          type="textarea"
-          :rows="3"
-          v-model="comment.comment"
-        ></el-input>
+        <el-input type="textarea" :rows="3" v-model="comment.comment"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -435,12 +416,7 @@ const beforeClose = () => {
     </template>
   </el-dialog>
 
-  <el-drawer
-    v-model="drawer"
-    direction="btt"
-    :before-close="beforeClose"
-    :key="key"
-  >
+  <el-drawer v-model="drawer" direction="btt" :before-close="beforeClose" :key="key">
     <template #header>
       <span style="text-align: left">添加/编辑图片</span>
     </template>
@@ -457,6 +433,7 @@ const beforeClose = () => {
         method="put"
         :on-remove="onRemove"
         :on-error="onError"
+        :headers="cookie"
       >
         <el-icon>
           <Plus />

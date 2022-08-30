@@ -12,7 +12,7 @@ store.dispatch("user/login").then((rst) => {
 const whetherLogin = (rst) => setAndLogin(rst);
 const setAndLogin = (rst) => {
   document.title = rst.data.name + "的日记本";
-  owner.value = rst.data.name;
+  owner.value = rst.data;
   isLogin.value = true;
 };
 </script>
