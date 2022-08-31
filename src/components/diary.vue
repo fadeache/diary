@@ -289,6 +289,7 @@ const onError = (error) => {
 };
 const beforeClose = () => {
   getAllList();
+  getCurrentList();
   drawer.value = false;
 };
 </script>
