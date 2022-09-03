@@ -360,7 +360,6 @@ const beforeClose = () => {
           :src="file.url"
           :preview-src-list="currentFilePath(currentFileList)"
           fit="cover"
-          lazy
         />
       </div>
       <div
