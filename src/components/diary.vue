@@ -335,7 +335,7 @@ const beforeClose = () => {
         "
       >
         <span>{{ item.event }}</span>
-        <span class="time" :class="{ 'time-has': hasPicture(item.id) }">
+        <span class="time" v-if="item.time" :class="{ 'time-has': hasPicture(item.id) }">
           {{
             item.time
           }}
