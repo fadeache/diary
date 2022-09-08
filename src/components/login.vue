@@ -68,7 +68,7 @@ const submitForm = () => {
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button type="success" @click="submitForm">登录</el-button>
+      <el-button type="primary" @click="submitForm">登录</el-button>
     </template>
   </el-dialog>
 </template>

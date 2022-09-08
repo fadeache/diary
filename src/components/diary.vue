@@ -549,7 +549,7 @@ const beforeClose = () => {
       &::before {
         content: "";
         position: absolute;
-        background: transparent;
+        background: lightblue;
         border-radius: 50%;
         top: calc(50% - 3px);
         left: 8px;
