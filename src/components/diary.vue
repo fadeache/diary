@@ -145,7 +145,7 @@ const addSchedule = async () => {
     input.value = "";
     ElMessage.success("添加成功啦");
   } else {
-    ElMessage.error(props.owner + "没啥东西写吗");
+    ElMessage.error(props.owner.name + "没啥东西写吗");
   }
 };
 const getSchedules = computed(() => {
@@ -237,7 +237,10 @@ const hasComment = computed(() => {
   };
 });
 
-const props = defineProps({ owner: String });
+const props = defineProps({ owner: Object });
+const cookie = ref({
+  "Cookie-User": props.owner.user + "=" + props.owner.pwd,
+});
 
 const currentFileList = ref([]);
 const upload = ref(null);
@@ -286,6 +289,7 @@ const onError = (error) => {
 };
 const beforeClose = () => {
   getAllList();
+  getCurrentList();
   drawer.value = false;
 };
 </script>
@@ -306,7 +310,7 @@ const beforeClose = () => {
     <el-input
       type="textarea"
       :rows="7"
-      :placeholder="'记录' + props.owner + '的点点滴滴'"
+      :placeholder="'记录' + props.owner.name + '的点点滴滴'"
       v-model="input"
     ></el-input>
     <div class="operation">
@@ -333,12 +337,16 @@ const beforeClose = () => {
         "
       >
         <span>{{ item.event }}</span>
-        <span class="time" :class="{ 'time-has': hasPicture(item.id) }">{{
-          item.time
-        }}</span>
-        <span class="tag" v-if="hasComment(item.id)">{{
-          hasComment(item.id)
-        }}</span>
+        <span
+          class="time"
+          v-if="item.time"
+          :class="{ 'time-has': hasPicture(item.id) }"
+        >
+          {{ item.time }}
+        </span>
+        <span class="tag" v-if="hasComment(item.id)">
+          {{ hasComment(item.id) }}
+        </span>
         <div
           style="width: 100%; margin-top: 8px"
           v-show="state.showIndex === item.id"
@@ -360,7 +368,6 @@ const beforeClose = () => {
           :src="file.url"
           :preview-src-list="currentFilePath(currentFileList)"
           fit="cover"
-          lazy
         />
       </div>
       <div
@@ -458,6 +465,7 @@ const beforeClose = () => {
         method="put"
         :on-remove="onRemove"
         :on-error="onError"
+        :headers="cookie"
       >
         <el-icon>
           <Plus />
@@ -541,7 +549,7 @@ const beforeClose = () => {
       &::before {
         content: "";
         position: absolute;
-        background: rgb(80, 160, 189);
+        background: transparent;
         border-radius: 50%;
         top: calc(50% - 3px);
         left: 8px;
