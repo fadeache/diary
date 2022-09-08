@@ -317,7 +317,7 @@ const beforeClose = () => {
         value-format="YYYY-MM-DD"
         :clearable="false"
       ></el-date-picker>
-      <el-button type="success" @click="addSchedule">添加今日美好</el-button>
+      <el-button type="primary" @click="addSchedule">添加今日美好</el-button>
     </div>
   </div>
 
@@ -427,6 +427,7 @@ const beforeClose = () => {
           type="textarea"
           :rows="3"
           v-model="comment.comment"
+          v-on:keyup.enter="addComment"
         ></el-input>
       </el-form-item>
     </el-form>
@@ -493,7 +494,7 @@ const beforeClose = () => {
         position: absolute;
         width: 18px;
         height: 2px;
-        background: #409eff;
+        background: var(--el-color-primary);
         margin-top: 36px;
         // margin-top: 28px;
         margin-left: 0;
@@ -540,7 +541,7 @@ const beforeClose = () => {
       &::before {
         content: "";
         position: absolute;
-        background: lightblue;
+        background: rgb(80, 160, 189);
         border-radius: 50%;
         top: calc(50% - 3px);
         left: 8px;
@@ -610,7 +611,7 @@ const beforeClose = () => {
 }
 
 .gm:hover {
-  color: #409eff;
+  color: var(--el-color-primary);
 }
 
 .my-dialog {

@@ -1,15 +1,10 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import ElementPlus from "element-plus";
-import "element-plus/dist/index.css";
-import * as ElIcons from "@element-plus/icons-vue";
 import store from "./store";
+import installElement from "./plugins/element";
 
 const app = createApp(App);
-app.use(ElementPlus);
-for (const name in ElIcons) {
-  app.component(name, ElIcons[name]);
-}
 app.use(store);
+installElement(app);
 
 app.mount("#app");
