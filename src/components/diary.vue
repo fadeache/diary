@@ -20,6 +20,7 @@ const state = reactive({
   exchangeArr: [],
   loading: false,
   loading2: false,
+  loading3: false,
 });
 const form = ref(null);
 const form2 = ref(null);
@@ -259,14 +260,13 @@ const hasPicture = computed(() => {
 });
 const key = ref(0);
 const onRemove = async (file) => {
-  if (file.id)
+  if (state.loading3) {
+    ElMessage.error("上传中，请稍候");
+  } else {
     await axios.delete("/ache/calendar/delete-picture", {
       params: { id: file.id, name: file.name },
     });
-  else {
-    getCurrentList();
-    key.value++;
-    ElMessage.error("再试一下");
+    counter.value--;
   }
 };
 const currentFilePath = computed(() => {
@@ -289,8 +289,23 @@ const onError = (error) => {
 };
 const beforeClose = () => {
   getAllList();
-  getCurrentList();
   drawer.value = false;
+};
+const counter = ref(0);
+const onSuccess = (response, uploadFile, uploadFiles) => {
+  counter.value++;
+  if (counter.value === currentFileList.value.length) {
+    getCurrentList();
+    state.loading3 = false;
+  }
+};
+const showDrawer = () => {
+  drawer.value = true;
+  counter.value = currentFileList.value.length;
+};
+const beforeUpload = () => {
+  console.log(1);
+  state.loading3 = true;
 };
 </script>
 
@@ -356,7 +371,7 @@ const beforeClose = () => {
           <span class="delete" @click.stop="deleteSchedule(item.id)">删除</span>
 
           <span class="comment" @click.stop="displayByComment(item)">评论</span>
-          <span class="addPic" @click.stop="drawer = true">图片</span>
+          <span class="addPic" @click.stop="showDrawer()">图片</span>
         </div>
       </el-alert>
       <div
@@ -448,9 +463,15 @@ const beforeClose = () => {
     direction="btt"
     :before-close="beforeClose"
     :key="key"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    :show-close="!state.loading3"
   >
     <template #header>
-      <span style="text-align: left">添加/编辑图片</span>
+      <span v-if="!state.loading3" style="text-align: left">添加/编辑图片</span>
+      <span v-else style="text-align: left; color: var(--el-color-primary)"
+        >上传中，请稍候</span
+      >
     </template>
     <template #default>
       <el-upload
@@ -465,6 +486,8 @@ const beforeClose = () => {
         method="put"
         :on-remove="onRemove"
         :on-error="onError"
+        :on-success="onSuccess"
+        :before-upload="beforeUpload"
         :headers="cookie"
       >
         <el-icon>
