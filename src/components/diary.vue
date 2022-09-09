@@ -260,14 +260,23 @@ const hasPicture = computed(() => {
 });
 const key = ref(0);
 const onRemove = async (file) => {
+  await axios.delete("/ache/calendar/delete-picture", {
+    params: { id: file.id, name: file.name },
+  });
+  counter.value--;
+};
+const beforeRemove = () => {
   if (state.loading3) {
-    ElMessage.error("上传中，请稍候");
-  } else {
-    await axios.delete("/ache/calendar/delete-picture", {
-      params: { id: file.id, name: file.name },
-    });
-    counter.value--;
+    warnDisabled();
+    return false;
   }
+};
+const disabled = ref(false);
+const warnDisabled = () => {
+  disabled.value = true;
+  setTimeout(() => {
+    disabled.value = false;
+  }, 1500);
 };
 const currentFilePath = computed(() => {
   return function (val) {
@@ -288,8 +297,12 @@ const onError = (error) => {
   alert(error.message);
 };
 const beforeClose = () => {
-  getAllList();
-  drawer.value = false;
+  if (state.loading3) {
+    warnDisabled();
+  } else {
+    getAllList();
+    drawer.value = false;
+  }
 };
 const counter = ref(0);
 const onSuccess = (response, uploadFile, uploadFiles) => {
@@ -304,7 +317,6 @@ const showDrawer = () => {
   counter.value = currentFileList.value.length;
 };
 const beforeUpload = () => {
-  console.log(1);
   state.loading3 = true;
 };
 </script>
@@ -465,11 +477,13 @@ const beforeUpload = () => {
     :key="key"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
-    :show-close="!state.loading3"
   >
     <template #header>
       <span v-if="!state.loading3" style="text-align: left">添加/编辑图片</span>
-      <span v-else style="text-align: left; color: var(--el-color-primary)"
+      <span
+        v-else
+        style="text-align: left; color: var(--el-color-primary)"
+        :class="{ shake: disabled }"
         >上传中，请稍候</span
       >
     </template>
@@ -485,6 +499,7 @@ const beforeUpload = () => {
         accept="image/*"
         method="put"
         :on-remove="onRemove"
+        :before-remove="beforeRemove"
         :on-error="onError"
         :on-success="onSuccess"
         :before-upload="beforeUpload"
@@ -631,6 +646,29 @@ const beforeUpload = () => {
         color: lightpink;
       }
     }
+  }
+}
+.shake {
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+}
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
   }
 }
 </style>
