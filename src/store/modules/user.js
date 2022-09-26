@@ -19,7 +19,7 @@ const actions = {
         commit("setUser", rst.data);
         commit("setCookie", data);
         axios.interceptors.request.use((config) => {
-          config.headers["Cookie-User"] = data.user + "=" + data.pwd;
+          config.headers["Authorization"] = data.user + "=" + data.pwd;
           return config;
         });
         return rst;
@@ -41,7 +41,7 @@ const actions = {
           if (rst.data) {
             commit("setUser", rst.data);
             axios.interceptors.request.use((config) => {
-              config.headers["Cookie-User"] = data.user + "=" + data.pwd;
+              config.headers["Authorization"] = data.user + "=" + data.pwd;
               return config;
             });
             return rst;
