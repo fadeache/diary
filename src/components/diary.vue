@@ -240,7 +240,7 @@ const hasComment = computed(() => {
 
 const props = defineProps({ owner: Object });
 const cookie = ref({
-  "Cookie-User": props.owner.user + "=" + props.owner.pwd,
+  "Authorization": props.owner.user + "=" + props.owner.pwd,
 });
 
 const currentFileList = ref([]);
@@ -324,60 +324,36 @@ const beforeUpload = () => {
 <template>
   <el-calendar v-model="state.value">
     <template #dateCell="{ data }">
-      <div
-        :class="{ hasSchedules: getSchedules(data).length }"
-        @click="showDetails(data)"
-      >
+      <div :class="{ hasSchedules: getSchedules(data).length }" @click="showDetails(data)">
         {{ data.day.split("-").slice(2).join("") }}
       </div>
     </template>
   </el-calendar>
 
   <div class="input">
-    <el-input
-      type="textarea"
-      :rows="7"
-      :placeholder="'记录' + props.owner.name + '的点点滴滴'"
-      v-model="input"
-    ></el-input>
+    <el-input type="textarea" :rows="7" :placeholder="'记录' + props.owner.name + '的点点滴滴'" v-model="input"></el-input>
     <div class="operation">
-      <el-date-picker
-        :editable="false"
-        v-model="date"
-        type="date"
-        value-format="YYYY-MM-DD"
-        :clearable="false"
-      ></el-date-picker>
+      <el-date-picker :editable="false" v-model="date" type="date" value-format="YYYY-MM-DD" :clearable="false">
+      </el-date-picker>
       <el-button type="primary" @click="addSchedule">添加今日美好</el-button>
     </div>
   </div>
 
   <div class="detail" v-loading="state.loading">
     <div v-for="item in JSON.parse(JSON.stringify(details))">
-      <el-alert
-        :closable="false"
-        :type="
-          ['success', 'info', 'error', 'warning'][Math.floor(Math.random() * 4)]
-        "
-        @click="
+      <el-alert :closable="false" :type="
+        ['success', 'info', 'error', 'warning'][Math.floor(Math.random() * 4)]
+      " @click="
           showOperations(item.id, hasComment(item.id), hasPicture(item.id))
-        "
-      >
+        ">
         <span>{{ item.event }}</span>
-        <span
-          class="time"
-          v-if="item.time"
-          :class="{ 'time-has': hasPicture(item.id) }"
-        >
+        <span class="time" v-if="item.time" :class="{ 'time-has': hasPicture(item.id) }">
           {{ item.time }}
         </span>
         <span class="tag" v-if="hasComment(item.id)">
           {{ hasComment(item.id) }}
         </span>
-        <div
-          style="width: 100%; margin-top: 8px"
-          v-show="state.showIndex === item.id"
-        >
+        <div style="width: 100%; margin-top: 8px" v-show="state.showIndex === item.id">
           <span class="edit" @click.stop="displayByEdit(item)">编辑</span>
           <span class="exchange" @click.stop="exchange(item)">交换</span>
           <span class="delete" @click.stop="deleteSchedule(item.id)">删除</span>
@@ -386,30 +362,14 @@ const beforeUpload = () => {
           <span class="addPic" @click.stop="showDrawer()">图片</span>
         </div>
       </el-alert>
-      <div
-        style="margin-top: 8px"
-        v-show="state.showIndex === item.id && currentFileList.length"
-      >
-        <el-image
-          v-for="file in currentFileList"
-          :src="file.url"
-          :preview-src-list="currentFilePath(currentFileList)"
-          fit="cover"
-        />
+      <div style="margin-top: 8px" v-show="state.showIndex === item.id && currentFileList.length">
+        <el-image v-for="file in currentFileList" :src="file.url" :preview-src-list="currentFilePath(currentFileList)"
+          fit="cover" />
       </div>
-      <div
-        class="comments"
-        v-show="state.showIndex === item.id && oneComment.length"
-        v-loading="state.loading2"
-      >
-        <div
-          class="oneComment"
-          v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))"
-        >
+      <div class="comments" v-show="state.showIndex === item.id && oneComment.length" v-loading="state.loading2">
+        <div class="oneComment" v-for="(one, index) in JSON.parse(JSON.stringify(oneComment))">
           <span>评论{{ index + 1 }}：{{ one.comment }}</span>
-          <span class="commentDel" @click.stop="deleteComment(one.id, item.id)"
-            >删除</span
-          >
+          <span class="commentDel" @click.stop="deleteComment(one.id, item.id)">删除</span>
         </div>
       </div>
     </div>
@@ -421,21 +381,11 @@ const beforeUpload = () => {
     </template>
     <el-form :model="aSchedule" ref="form" :rules="rules" :label-width="52">
       <el-form-item label="日期" prop="date">
-        <el-date-picker
-          :editable="false"
-          v-model="aSchedule.date"
-          type="date"
-          placeholder="选择日期"
-          value-format="YYYY-MM-DD"
-          :clearable="false"
-        ></el-date-picker>
+        <el-date-picker :editable="false" v-model="aSchedule.date" type="date" placeholder="选择日期"
+          value-format="YYYY-MM-DD" :clearable="false"></el-date-picker>
       </el-form-item>
       <el-form-item label="日记" prop="event">
-        <el-input
-          type="textarea"
-          :rows="7"
-          v-model="aSchedule.event"
-        ></el-input>
+        <el-input type="textarea" :rows="7" v-model="aSchedule.event"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -449,20 +399,10 @@ const beforeUpload = () => {
     </template>
     <el-form :model="comment" ref="form2" :rules="rules2" :label-width="52">
       <el-form-item label="回复">
-        <el-input
-          type="textarea"
-          :rows="3"
-          v-model="aSchedule.event"
-          disabled
-        ></el-input>
+        <el-input type="textarea" :rows="3" v-model="aSchedule.event" disabled></el-input>
       </el-form-item>
       <el-form-item label="评论" prop="comment">
-        <el-input
-          type="textarea"
-          :rows="3"
-          v-model="comment.comment"
-          v-on:keyup.enter="addComment"
-        ></el-input>
+        <el-input type="textarea" :rows="3" v-model="comment.comment" v-on:keyup.enter="addComment"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -470,41 +410,17 @@ const beforeUpload = () => {
     </template>
   </el-dialog>
 
-  <el-drawer
-    v-model="drawer"
-    direction="btt"
-    :before-close="beforeClose"
-    :key="key"
-    :close-on-click-modal="false"
-    :close-on-press-escape="false"
-  >
+  <el-drawer v-model="drawer" direction="btt" :before-close="beforeClose" :key="key" :close-on-click-modal="false"
+    :close-on-press-escape="false">
     <template #header>
       <span v-if="!state.loading3" style="text-align: left">添加/编辑图片</span>
-      <span
-        v-else
-        style="text-align: left; color: var(--el-color-primary)"
-        :class="{ shake: disabled }"
-        >上传中，请稍候</span
-      >
+      <span v-else style="text-align: left; color: var(--el-color-primary)" :class="{ shake: disabled }">上传中，请稍候</span>
     </template>
     <template #default>
-      <el-upload
-        ref="upload"
-        v-model:file-list="currentFileList"
-        action="/ache/calendar/add-picture"
-        list-type="picture-card"
-        multiple
-        :auto-upload="true"
-        :data="{ pid: state.showIndex }"
-        accept="image/*"
-        method="put"
-        :on-remove="onRemove"
-        :before-remove="beforeRemove"
-        :on-error="onError"
-        :on-success="onSuccess"
-        :before-upload="beforeUpload"
-        :headers="cookie"
-      >
+      <el-upload ref="upload" v-model:file-list="currentFileList" action="/ache/calendar/add-picture"
+        list-type="picture-card" multiple :auto-upload="true" :data="{ pid: state.showIndex }" accept="image/*"
+        method="put" :on-remove="onRemove" :before-remove="beforeRemove" :on-error="onError" :on-success="onSuccess"
+        :before-upload="beforeUpload" :headers="cookie">
         <el-icon>
           <Plus />
         </el-icon>
@@ -579,11 +495,13 @@ const beforeUpload = () => {
         margin: 5px 0;
       }
     }
+
     .time {
       position: relative;
       width: 48px;
       text-align: right;
       display: inline-block;
+
       &::before {
         content: "";
         position: absolute;
@@ -595,11 +513,13 @@ const beforeUpload = () => {
         height: 6px;
       }
     }
+
     .time-has {
       &::before {
         background: rgb(23, 210, 23);
       }
     }
+
     .tag {
       border-radius: 50%;
       border: 1px solid;
@@ -609,6 +529,7 @@ const beforeUpload = () => {
       transform: translateY(-50%);
       padding: 0 2px;
     }
+
     .edit {
       float: left;
     }
@@ -623,6 +544,7 @@ const beforeUpload = () => {
       float: right;
       margin-left: 16px;
     }
+
     .addPic {
       float: right;
     }
@@ -648,24 +570,30 @@ const beforeUpload = () => {
     }
   }
 }
+
 .shake {
   animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
   transform: translate3d(0, 0, 0);
 }
+
 @keyframes shake {
+
   10%,
   90% {
     transform: translate3d(-1px, 0, 0);
   }
+
   20%,
   80% {
     transform: translate3d(2px, 0, 0);
   }
+
   30%,
   50%,
   70% {
     transform: translate3d(-4px, 0, 0);
   }
+
   40%,
   60% {
     transform: translate3d(4px, 0, 0);
@@ -721,22 +649,28 @@ const beforeUpload = () => {
 .el-drawer {
   max-height: 100%;
   height: auto !important;
+
   .el-drawer__header {
     margin-bottom: 0;
   }
+
   .el-upload-list--picture-card {
     justify-content: center;
     gap: 12px;
+
     .el-upload-list__item {
       margin: 0;
     }
+
     img {
       object-fit: cover;
     }
+
     .el-upload-list__item-preview {
       display: none !important;
     }
-    .el-upload-list__item-actions span + span {
+
+    .el-upload-list__item-actions span+span {
       margin-left: 0;
     }
   }
