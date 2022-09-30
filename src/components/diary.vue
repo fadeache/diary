@@ -1,13 +1,14 @@
 <script setup>
-import {
-  computed,
-  reactive,
-  ref,
-  onBeforeMount,
-  toRaw,
-  watch,
-  nextTick,
-} from "vue";
+import
+  {
+    computed,
+    reactive,
+    ref,
+    onBeforeMount,
+    toRaw,
+    watch,
+    nextTick,
+  } from "vue";
 import axios from "axios";
 import time from "@/utils/time";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -27,13 +28,15 @@ const form2 = ref(null);
 const input = ref("");
 const date = ref(time.format(new Date(), "yyyy-MM-dd"));
 const details = ref([]);
-onBeforeMount(async () => {
+onBeforeMount(async () =>
+{
   updateSchedules();
   getALLComments();
   getAllList();
 });
 
-const updateSchedules = async () => {
+const updateSchedules = async () =>
+{
   state.loading = true;
   let res = await axios.get("/ache/calendar/get-calendar");
   state.loading = false;
@@ -55,7 +58,8 @@ const comment = ref({
 const oneComment = ref([]);
 const allComents = ref([]);
 
-const displayByEdit = (data) => {
+const displayByEdit = (data) =>
+{
   aSchedule.value = data;
   state.showDialog = true;
 };
@@ -74,8 +78,10 @@ const rules2 = reactive({
   comment: [{ required: true, message: "评论不能为空哦", trigger: ["blur"] }],
 });
 
-const editSchedule = () => {
-  form.value.validate(async (valid, fields) => {
+const editSchedule = () =>
+{
+  form.value.validate(async (valid, fields) =>
+  {
     if (valid) {
       await axios.put("/ache/calendar/edit-calendar", aSchedule.value);
       ElMessage.success("编辑好咯");
@@ -85,12 +91,14 @@ const editSchedule = () => {
   });
 };
 
-const deleteSchedule = async (id) => {
+const deleteSchedule = async (id) =>
+{
   ElMessageBox.confirm("真的要删除这段吗？", "删除", {
     distinguishCancelAndClose: true,
     confirmButtonText: "真的",
     cancelButtonText: "假的",
-  }).then(async () => {
+  }).then(async () =>
+  {
     await axios.delete("/ache/calendar/delete-calendar", {
       params: { id: parseInt(id) },
     });
@@ -99,7 +107,8 @@ const deleteSchedule = async (id) => {
   });
 };
 
-const exchange = async (item) => {
+const exchange = async (item) =>
+{
   state.exchangeArr.push(item.id);
   if (state.exchangeArr.length === 1) {
     ElMessage({
@@ -130,7 +139,8 @@ const exchange = async (item) => {
   }
 };
 
-const addSchedule = async () => {
+const addSchedule = async () =>
+{
   if (input.value) {
     let data = {
       date: date.value,
@@ -149,10 +159,13 @@ const addSchedule = async () => {
     ElMessage.error(props.owner.name + "没啥东西写吗");
   }
 };
-const getSchedules = computed(() => {
-  return function (data) {
+const getSchedules = computed(() =>
+{
+  return function (data)
+  {
     let theDay = [];
-    state.schedules.find((item) => {
+    state.schedules.find((item) =>
+    {
       if (item.date === data.day) {
         theDay.push(item);
       }
@@ -161,9 +174,11 @@ const getSchedules = computed(() => {
   };
 });
 
-const showDetails = (data) => {
+const showDetails = (data) =>
+{
   if (data)
-    details.value = state.schedules.filter((item) => {
+    details.value = state.schedules.filter((item) =>
+    {
       return item.date === data.day;
     });
   date.value = data.day;
@@ -174,7 +189,8 @@ watch(
   () => showDetails({ day: date.value })
 );
 
-const showOperations = async (id, len, boolean) => {
+const showOperations = async (id, len, boolean) =>
+{
   if (state.showIndex === id) {
     state.showIndex = null;
   } else {
@@ -186,7 +202,8 @@ const showOperations = async (id, len, boolean) => {
   }
 };
 
-const updateComments = async (id) => {
+const updateComments = async (id) =>
+{
   state.loading2 = true;
   let res = await axios.get("/ache/calendar/get-comments", {
     params: { pid: id },
@@ -195,8 +212,10 @@ const updateComments = async (id) => {
   oneComment.value = res.data;
 };
 
-const addComment = () => {
-  form2.value.validate(async (valid, fields) => {
+const addComment = () =>
+{
+  form2.value.validate(async (valid, fields) =>
+  {
     if (valid) {
       await axios.post("/ache/calendar/add-comment", comment.value);
       state.showDialog2 = false;
@@ -206,7 +225,8 @@ const addComment = () => {
   });
 };
 
-const displayByComment = (data) => {
+const displayByComment = (data) =>
+{
   aSchedule.value = data;
   comment.value.pid = data.id;
   comment.value.comment = "";
@@ -214,7 +234,8 @@ const displayByComment = (data) => {
   nextTick(() => form2.value.resetFields());
 };
 
-const deleteComment = async (id, pid) => {
+const deleteComment = async (id, pid) =>
+{
   await axios.delete("/ache/calendar/delete-comment", {
     params: { id: parseInt(id) },
   });
@@ -223,15 +244,19 @@ const deleteComment = async (id, pid) => {
   oneComment.value = res.data;
 };
 
-const getALLComments = async () => {
+const getALLComments = async () =>
+{
   let res = await axios.get("/ache/calendar/get-comments");
   allComents.value = res.data;
 };
 
-const hasComment = computed(() => {
-  return function (id) {
+const hasComment = computed(() =>
+{
+  return function (id)
+  {
     let map = 0;
-    allComents.value.find((item) => {
+    allComents.value.find((item) =>
+    {
       if (item.pid === id) map++;
     });
     return map;
@@ -247,56 +272,71 @@ const currentFileList = ref([]);
 const upload = ref(null);
 const drawer = ref(false);
 const allFileList = ref([]);
-const getAllList = async () => {
-  let res = await axios.get("ache/calendar/get-picture");
+const getAllList = async () =>
+{
+  let res = await axios.get("/ache/calendar/get-picture");
   allFileList.value = res.data;
 };
-const hasPicture = computed(() => {
-  return function (id) {
-    return allFileList.value.find((item) => {
+const hasPicture = computed(() =>
+{
+  return function (id)
+  {
+    return allFileList.value.find((item) =>
+    {
       if (item.pid === id) return true;
     });
   };
 });
 const key = ref(0);
-const onRemove = async (file) => {
+const onRemove = async (file) =>
+{
   await axios.delete("/ache/calendar/delete-picture", {
     params: { id: file.id, name: file.name },
   });
   counter.value--;
 };
-const beforeRemove = () => {
+const beforeRemove = () =>
+{
   if (state.loading3) {
     warnDisabled();
     return false;
   }
 };
 const disabled = ref(false);
-const warnDisabled = () => {
+const warnDisabled = () =>
+{
   disabled.value = true;
-  setTimeout(() => {
+  setTimeout(() =>
+  {
     disabled.value = false;
   }, 1500);
 };
-const currentFilePath = computed(() => {
-  return function (val) {
-    return val.map((item) => {
+const currentFilePath = computed(() =>
+{
+  return function (val)
+  {
+    return val.map((item) =>
+    {
       return item.url;
     });
   };
 });
-const getCurrentList = async () => {
-  let res = await axios.get("ache/calendar/get-picture", {
+const getCurrentList = async () =>
+{
+  let res = await axios.get("/ache/calendar/get-picture", {
     params: { pid: state.showIndex },
   });
-  currentFileList.value = res.data.map((item) => {
+  currentFileList.value = res.data.map((item) =>
+  {
     return { name: item.name, url: item.path, id: item.id };
   });
 };
-const onError = (error) => {
+const onError = (error) =>
+{
   alert(error.message);
 };
-const beforeClose = () => {
+const beforeClose = () =>
+{
   if (state.loading3) {
     warnDisabled();
   } else {
@@ -305,18 +345,21 @@ const beforeClose = () => {
   }
 };
 const counter = ref(0);
-const onSuccess = (response, uploadFile, uploadFiles) => {
+const onSuccess = (response, uploadFile, uploadFiles) =>
+{
   counter.value++;
   if (counter.value === currentFileList.value.length) {
     getCurrentList();
     state.loading3 = false;
   }
 };
-const showDrawer = () => {
+const showDrawer = () =>
+{
   drawer.value = true;
   counter.value = currentFileList.value.length;
 };
-const beforeUpload = () => {
+const beforeUpload = () =>
+{
   state.loading3 = true;
 };
 </script>
@@ -344,8 +387,8 @@ const beforeUpload = () => {
       <el-alert :closable="false" :type="
         ['success', 'info', 'error', 'warning'][Math.floor(Math.random() * 4)]
       " @click="
-          showOperations(item.id, hasComment(item.id), hasPicture(item.id))
-        ">
+        showOperations(item.id, hasComment(item.id), hasPicture(item.id))
+      ">
         <span>{{ item.event }}</span>
         <span class="time" v-if="item.time" :class="{ 'time-has': hasPicture(item.id) }">
           {{ item.time }}

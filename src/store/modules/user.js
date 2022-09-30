@@ -33,23 +33,22 @@ const actions = {
         for (let i = 0; i < arrcookie.length; i++) {
           //遍历匹配
           let arr = arrcookie[i].split("=");
-          let data = {
-            user: arr[0],
-            pwd: arr[1],
-          };
-          const rst = await axios.post("/ache/login", data);
-          if (rst.data) {
-            commit("setUser", rst.data);
-            axios.interceptors.request.use((config) => {
-              config.headers["Authorization"] = data.user + "=" + data.pwd;
-              return config;
-            });
-            return rst;
+          if (arr[0] === "user") {
+            let data = {
+              user: arr[1],
+              pwd: arr[2],
+            };
+            const rst = await axios.post("/ache/login", data);
+            if (rst.data) {
+              commit("setUser", rst.data);
+              axios.interceptors.request.use((config) => {
+                config.headers["Authorization"] = data.user + "=" + data.pwd;
+                return config;
+              });
+              return rst;
+            }
           }
         }
-        return false;
-      } else {
-        return false;
       }
     }
   },
@@ -63,7 +62,12 @@ const mutations = {
     let expTime = new Date();
     expTime.setTime(expTime.getTime() + 2 * 60 * 60 * 1000);
     document.cookie =
-      userInfo.user + "=" + userInfo.pwd + ";expires=" + expTime.toUTCString();
+      "user=" +
+      userInfo.user +
+      "=" +
+      userInfo.pwd +
+      ";expires=" +
+      expTime.toUTCString();
   },
 };
 
